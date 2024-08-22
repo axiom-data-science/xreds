@@ -109,7 +109,11 @@ def load_dataset(
     elif dataset_type == "zarr":
         # TODO: Enable S3  support
         # mapper = fsspec.get_mapper(dataset_location)
-        ds = xr.open_zarr(dataset_path, consolidated=True)
+        try:
+            ds = xr.open_zarr(dataset_path, consolidated=True)
+        except Exception:
+            logger.warning(f"Failed to open dataset: {dataset_path}")
+            raise
 
     if ds is None:
         return None
