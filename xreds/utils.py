@@ -118,6 +118,20 @@ def load_dataset(
     if additional_attrs is not None:
         ds.attrs.update(additional_attrs)
 
+    # TODO: Rethink implementation
+    # If a boolean coordinate exists along the time dimension, use it to mask
+    # the time dimension
+    # TODO: Determine time_mask_name from dataset configuration
+    time_dim = ds.cf["time"].dims[0]
+    time_mask_name = "time_mask"
+
+    if time_mask_name in ds.coords:
+        time_mask = ds[time_mask_name]
+        ds = ds.sel({time_dim: time_mask})
+
+        # Be sure to drop the time_mask coordinate (xpublish-wms does not like it)
+        ds = ds.drop(time_mask_name)
+
     # Check if we have a time dimension and if it is not indexed, index it
     try:
         time_dim = ds.cf["time"].dims[0]
